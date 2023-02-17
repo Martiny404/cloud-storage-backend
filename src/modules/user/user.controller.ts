@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
   UseFilters,
   UseGuards,
@@ -24,6 +25,14 @@ import { UserService } from './services/user.service';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  @Get('/test/')
+  async test(@Query() query) {
+    return {
+      message: 'Hello!',
+      query: query,
+    };
+  }
 
   @UseGuards(AuthorizationGuard, RoleGuard)
   @Roles('ADMIN')

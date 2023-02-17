@@ -1,13 +1,15 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from './modules/auth/auth.module';
 import { TokenModule } from './modules/token/token.module';
-import { FileModule } from './modules/file/file.module';
+import { FileSystemModule } from './modules/file-system/file-system.module';
 import { UserModule } from './modules/user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getTypeormConfig } from './configs/typeorm.config';
 import { MailModule } from './modules/mail/mail.module';
 import { RoleModule } from './modules/role/role.module';
+import { FolderModule } from './modules/folder/folder.module';
+import { FileModule } from './modules/file/file.module';
 
 @Module({
   imports: [
@@ -22,10 +24,12 @@ import { RoleModule } from './modules/role/role.module';
 
     AuthModule,
     TokenModule,
-    FileModule,
+    FileSystemModule,
     UserModule,
     MailModule,
     RoleModule,
+    FolderModule,
+    FileModule,
   ],
 })
 export class AppModule {}

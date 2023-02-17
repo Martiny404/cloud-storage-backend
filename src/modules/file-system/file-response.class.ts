@@ -1,4 +1,4 @@
-export class FileResponse {
+export class FileSystemResponse {
   url: string;
   name: string;
 
