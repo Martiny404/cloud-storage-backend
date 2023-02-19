@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { mkdir, readdir, stat, writeFile } from 'fs/promises';
+import { mkdir, readdir, readFile, stat, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { basename, join } from 'path';
 import { FileSystemResponse } from '../classes/file-response.class';
 import { MFile } from '../classes/mfile.class';
 import { FILE_NOT_FOUND } from 'src/common/constants/errors/file-system.errors';
 import * as sharp from 'sharp';
+import { File } from 'src/modules/file/entities/file.entity';
 
 @Injectable()
 export class FileSystemHelpersService {
@@ -105,5 +106,11 @@ export class FileSystemHelpersService {
       }),
     );
     return newFiles;
+  }
+
+  async serveFile(file: File) {
+    const filePath = this.getFullPath(file.path);
+    const response = await readFile(filePath);
+    return response;
   }
 }

@@ -1,7 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FOLDER_NOT_FOUND } from 'src/common/constants/errors/file-system.errors';
-import { In, Repository } from 'typeorm';
+import {
+  FILE_NOT_FOUND,
+  FOLDER_NOT_FOUND,
+} from 'src/common/constants/errors/file-system.errors';
+import { FindOneOptions, In, Repository } from 'typeorm';
 import { FileSystemService } from '../file-system/services/file-system.service';
 import { MFile } from 'src/modules/file-system/classes/mfile.class';
 import { FolderService } from '../folder/folder.service';
@@ -60,5 +63,24 @@ export class FileService {
     const filteredFiles = files.filter((file) => !badPaths.includes(file.path));
     await this.fileRepository.remove(filteredFiles);
     return badTries;
+  }
+
+  async serveFileForUser(id: number, userId: number) {
+    const file = await this.getFile({
+      where: {
+        id,
+        folder: { user: { id: userId } },
+      },
+    });
+    if (!file) {
+      throw new NotFoundException(FILE_NOT_FOUND);
+    }
+    return file;
+  }
+
+  async getFile(options: FindOneOptions<File>) {
+    const file = await this.fileRepository.findOne(options);
+
+    return file;
   }
 }

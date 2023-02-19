@@ -15,14 +15,13 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { createReadStream } from 'fs';
-import { join } from 'path';
 import { HttpExceptionFilter } from 'src/exception-filters/http-exception.filter';
 import { RemoveFilesDto } from './dto/remove-files.dto';
 import { FileSystemHelpersService } from './services/file-system-helpers.service';
 import { FileSystemService } from './services/file-system.service';
 
 @UseFilters(HttpExceptionFilter)
-@Controller('file')
+@Controller('file-system')
 export class FileSystemController {
   constructor(
     private readonly fileSystemService: FileSystemService,
@@ -52,7 +51,9 @@ export class FileSystemController {
     @Res({ passthrough: true }) res: Response,
   ): StreamableFile {
     const baseName = this.fileSystemHelpersService.getBaseName(path);
-    const file = createReadStream(join(__dirname, '..', '..', '..', path));
+    const file = createReadStream(
+      this.fileSystemHelpersService.getFullPath(path),
+    );
     res.set({
       'Content-Type': 'application/json',
       'Content-Disposition': `attachment; filename="${baseName}"`,
