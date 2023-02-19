@@ -28,13 +28,13 @@ export class FileSystemController {
   @Post()
   @HttpCode(200)
   @UseInterceptors(FilesInterceptor('file'))
-  async uploadFile(
+  async uploadStaticFiles(
     @UploadedFiles() files: Express.Multer.File[],
     @Query('folder') folder?: string,
   ) {
     const newFiles = await this.fileSystemService.filterFiles(files);
 
-    return this.fileSystemService.saveFiles(newFiles, folder);
+    return this.fileSystemService.saveStaticFiles(newFiles, folder);
   }
 
   @Delete('/')

@@ -13,5 +13,6 @@ import { FileSystemService } from './file-system.service';
       serveRoot: '/static',
     }),
   ],
+  exports: [FileSystemService],
 })
 export class FileSystemModule {}

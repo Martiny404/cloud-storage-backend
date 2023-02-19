@@ -1,4 +1,5 @@
 import { Base } from 'src/common/classes/base-entity';
+import { Folder } from 'src/modules/folder/entities/folder.entity';
 import { Role } from 'src/modules/role/entities/role.entity';
 import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
 import { ActivationLink } from './activation-links.entity';
@@ -28,4 +29,7 @@ export class User extends Base {
 
   @OneToMany(() => ActivationLink, (links) => links.user)
   links: ActivationLink[];
+
+  @OneToMany(() => Folder, (folder) => folder.user)
+  folders: Folder[];
 }
