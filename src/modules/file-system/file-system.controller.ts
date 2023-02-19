@@ -18,12 +18,16 @@ import { createReadStream } from 'fs';
 import { join } from 'path';
 import { HttpExceptionFilter } from 'src/exception-filters/http-exception.filter';
 import { RemoveFilesDto } from './dto/remove-files.dto';
-import { FileSystemService } from './file-system.service';
+import { FileSystemHelpersService } from './services/file-system-helpers.service';
+import { FileSystemService } from './services/file-system.service';
 
 @UseFilters(HttpExceptionFilter)
 @Controller('file')
 export class FileSystemController {
-  constructor(private readonly fileSystemService: FileSystemService) {}
+  constructor(
+    private readonly fileSystemService: FileSystemService,
+    private readonly fileSystemHelpersService: FileSystemHelpersService,
+  ) {}
 
   @Post()
   @HttpCode(200)
@@ -32,7 +36,7 @@ export class FileSystemController {
     @UploadedFiles() files: Express.Multer.File[],
     @Query('folder') folder?: string,
   ) {
-    const newFiles = await this.fileSystemService.filterFiles(files);
+    const newFiles = await this.fileSystemHelpersService.filterFiles(files);
 
     return this.fileSystemService.saveStaticFiles(newFiles, folder);
   }
@@ -47,7 +51,7 @@ export class FileSystemController {
     @Query('path') path: string,
     @Res({ passthrough: true }) res: Response,
   ): StreamableFile {
-    const baseName = this.fileSystemService.getBaseName(path);
+    const baseName = this.fileSystemHelpersService.getBaseName(path);
     const file = createReadStream(join(__dirname, '..', '..', '..', path));
     res.set({
       'Content-Type': 'application/json',

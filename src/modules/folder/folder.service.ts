@@ -9,7 +9,8 @@ import {
   FOLDER_NOT_FOUND,
 } from 'src/common/constants/errors/file-system.errors';
 import { FindOneOptions, In, Not, Repository } from 'typeorm';
-import { FileSystemService } from '../file-system/file-system.service';
+import { FileSystemHelpersService } from '../file-system/services/file-system-helpers.service';
+import { FileSystemService } from '../file-system/services/file-system.service';
 import { CreateFolderDto } from './dto/create-folder.dto';
 import { Folder } from './entities/folder.entity';
 
@@ -19,6 +20,7 @@ export class FolderService {
     @InjectRepository(Folder)
     private readonly folderRepository: Repository<Folder>,
     private readonly fileSystemService: FileSystemService,
+    private readonly fileSystemHelpersService: FileSystemHelpersService,
   ) {}
 
   async createFolder({ name, parentId }: CreateFolderDto, userId: number) {
@@ -77,5 +79,15 @@ export class FolderService {
     );
     await this.folderRepository.remove(filteredFolders);
     return badTries;
+  }
+
+  async getFolderSize(id: number) {
+    const folder = await this.findFolderBy({ where: { id } });
+    if (!folder) {
+      throw new NotFoundException(FOLDER_NOT_FOUND);
+    }
+    const dirPath = this.fileSystemHelpersService.getFullPath(folder.path);
+
+    return this.fileSystemHelpersService.getFolderSize(dirPath);
   }
 }

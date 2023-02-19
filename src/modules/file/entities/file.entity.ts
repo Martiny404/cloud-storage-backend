@@ -10,6 +10,9 @@ export class File extends Base {
   @Column({ type: 'varchar' })
   name: string;
 
+  @Column({ type: 'float4' })
+  size: number;
+
   @ManyToOne(() => Folder, (folder) => folder.files, {
     onDelete: 'CASCADE',
   })

@@ -43,4 +43,9 @@ export class FolderController {
     const userId = req.user.id;
     return this.folderService.removeFolders(ids, userId);
   }
+
+  @Get('/folder-size/:id')
+  getFolderSize(@Param('id', new ParseIntPipe()) id: number) {
+    return this.folderService.getFolderSize(id);
+  }
 }

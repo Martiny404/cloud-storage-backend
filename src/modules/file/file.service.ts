@@ -2,10 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FOLDER_NOT_FOUND } from 'src/common/constants/errors/file-system.errors';
 import { In, Repository } from 'typeorm';
-import { FileSystemService } from '../file-system/file-system.service';
-import { MFile } from '../file-system/mfile.class';
+import { FileSystemService } from '../file-system/services/file-system.service';
+import { MFile } from 'src/modules/file-system/classes/mfile.class';
 import { FolderService } from '../folder/folder.service';
 import { File } from './entities/file.entity';
+import { FileSystemHelpersService } from '../file-system/services/file-system-helpers.service';
 
 @Injectable()
 export class FileService {
@@ -13,6 +14,7 @@ export class FileService {
     @InjectRepository(File) private readonly fileRepository: Repository<File>,
     private readonly fileSystemService: FileSystemService,
     private readonly folderService: FolderService,
+    private readonly fileSystemHelpersService: FileSystemHelpersService,
   ) {}
   async createFile(files: MFile[], folderId: number, userId: number) {
     const folder = await this.folderService.findFolderBy({
@@ -21,7 +23,9 @@ export class FileService {
     if (!folder) {
       throw new NotFoundException(FOLDER_NOT_FOUND);
     }
-    const compressedFiles = await this.fileSystemService.filterFiles(files);
+    const compressedFiles = await this.fileSystemHelpersService.filterFiles(
+      files,
+    );
     const savedFiles = await this.fileSystemService.saveUserFiles(
       compressedFiles,
       folder.path,
@@ -31,6 +35,7 @@ export class FileService {
         folder: { id: folder.id },
         name: file.name,
         path: file.url,
+        size: file.size,
       });
       return newFile;
     });

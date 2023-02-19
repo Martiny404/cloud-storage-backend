@@ -10,6 +10,7 @@ import { MailModule } from './modules/mail/mail.module';
 import { RoleModule } from './modules/role/role.module';
 import { FolderModule } from './modules/folder/folder.module';
 import { FileModule } from './modules/file/file.module';
+import { TarifModule } from './modules/tarif/tarif.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { FileModule } from './modules/file/file.module';
     RoleModule,
     FolderModule,
     FileModule,
+    TarifModule,
   ],
 })
 export class AppModule {}

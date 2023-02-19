@@ -33,13 +33,13 @@ export class TokenService {
     const accessToken = await this.jwtService.signAsync(
       { ...payload },
       {
-        expiresIn: '1m',
+        expiresIn: this.configService.get<string>('ACCESS_TOKEN_EXPIRES'),
       },
     );
     const refreshToken = await this.jwtService.signAsync(
       { ...payload },
       {
-        expiresIn: '3m',
+        expiresIn: this.configService.get<string>('REFRESH_TOKEN_EXPIRES'),
         secret: this.configService.get('JWT_SECRET_REFRESH'),
       },
     );
