@@ -10,6 +10,7 @@ import { MFile } from 'src/modules/file-system/classes/mfile.class';
 import { FolderService } from '../folder/folder.service';
 import { File } from './entities/file.entity';
 import { FileSystemHelpersService } from '../file-system/services/file-system-helpers.service';
+import { v4 } from 'uuid';
 
 @Injectable()
 export class FileService {
@@ -65,7 +66,7 @@ export class FileService {
     return badTries;
   }
 
-  async serveFileForUser(id: number, userId: number) {
+  async findFileByUser(id: number, userId: number) {
     const file = await this.getFile({
       where: {
         id,
@@ -80,7 +81,29 @@ export class FileService {
 
   async getFile(options: FindOneOptions<File>) {
     const file = await this.fileRepository.findOne(options);
-
     return file;
+  }
+
+  async removePublicLink(id: number, userId: number) {
+    const file = await this.findFileByUser(id, userId);
+    file.publicLink = null;
+    return this.fileRepository.save(file);
+  }
+
+  async getFileByLink(link: string) {
+    const file = await this.getFile({
+      where: { publicLink: link },
+    });
+    if (!file) {
+      throw new NotFoundException(FILE_NOT_FOUND);
+    }
+    return file;
+  }
+
+  async generatePublicLink(id: number, userId: number) {
+    const file = await this.findFileByUser(id, userId);
+    const link = `${v4()}-${file.id}`;
+    file.publicLink = link;
+    return this.fileRepository.save(file);
   }
 }

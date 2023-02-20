@@ -10,6 +10,14 @@ export class File extends Base {
   @Column({ type: 'varchar' })
   name: string;
 
+  @Column({
+    type: 'varchar',
+    name: 'public_link',
+    nullable: true,
+    unique: true,
+  })
+  publicLink: string;
+
   @Column({ type: 'float4' })
   size: number;
 

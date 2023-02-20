@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Query,
   Req,
@@ -52,14 +53,45 @@ export class FileController {
 
   @UseGuards(AuthorizationGuard, RoleGuard)
   @Roles('USER')
+  @Patch('/generate-public-link/:id')
+  generatePublicLink(
+    @Param('id', new ParseIntPipe()) id: number,
+    @Req() req: AppClientRequest,
+  ) {
+    const userId = req.user.id;
+    return this.fileService.generatePublicLink(id, userId);
+  }
+
+  @UseGuards(AuthorizationGuard, RoleGuard)
+  @Roles('USER')
+  @Patch('/remove-public-link/:id')
+  removePublicLink(
+    @Param('id', new ParseIntPipe()) id: number,
+    @Req() req: AppClientRequest,
+  ) {
+    const userId = req.user.id;
+    return this.fileService.removePublicLink(id, userId);
+  }
+
+  @UseGuards(AuthorizationGuard, RoleGuard)
+  @Roles('USER')
   @Get('/serve-file/:id')
   async serveFile(
     @Param('id', new ParseIntPipe()) id: number,
     @Req() req: AppClientRequest,
     @Res() res: Response,
   ) {
-    const userId = req.user.id;
-    const file = await this.fileService.serveFileForUser(id, userId);
+    const userId = req?.user?.id;
+    const file = await this.fileService.findFileByUser(id, userId);
+    const buffer = await this.fileSystemHelpersService.serveFile(file);
+    res.statusCode = 200;
+    res.write(buffer);
+    return res.end();
+  }
+
+  @Get('/serve-file-by-link/:link')
+  async serveFileByLink(@Param('link') link: string, @Res() res: Response) {
+    const file = await this.fileService.getFileByLink(link);
     const buffer = await this.fileSystemHelpersService.serveFile(file);
     res.statusCode = 200;
     res.write(buffer);
