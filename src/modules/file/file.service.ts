@@ -106,4 +106,18 @@ export class FileService {
     file.publicLink = link;
     return this.fileRepository.save(file);
   }
+
+  async rename(id: number, newName: string) {
+    const file = await this.getFile({
+      where: { id },
+    });
+    const newData = await this.fileSystemHelpersService.rename(
+      file.path,
+      newName,
+    );
+
+    file.name = newData.name;
+    file.path = newData.path;
+    return this.fileRepository.save(file);
+  }
 }

@@ -1,12 +1,17 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  StreamableFile,
+} from '@nestjs/common';
 import { mkdir, rm, rmdir } from 'fs/promises';
 import { join } from 'path';
 import { MFile } from '../classes/mfile.class';
 import { BadTry } from '../classes/bad-try.class';
-import { existsSync } from 'fs';
+import { createReadStream, existsSync } from 'fs';
 import { DUPLICATE_FOLDER_NAME } from 'src/common/constants/errors/file-system.errors';
 import { FileSystemHelpersService } from './file-system-helpers.service';
 import { SaveFileResponse } from '../classes/save-file-response.class';
+import { Response } from 'express';
 
 @Injectable()
 export class FileSystemService {
@@ -15,7 +20,10 @@ export class FileSystemService {
     private readonly fileSystemHelpersService: FileSystemHelpersService,
   ) {}
   async saveStaticFiles(files: MFile[], folder = 'default') {
-    const uploadFolder = join(__dirname, '..', '..', '..', 'static', folder);
+    const uploadFolder = this.fileSystemHelpersService.getFullPath(
+      'static',
+      folder,
+    );
     return this.fileSystemHelpersService.saveFiles(
       files,
       uploadFolder,
@@ -92,5 +100,17 @@ export class FileSystemService {
     return path != ''
       ? join(path, folderName)
       : join('clients', `${userId}`, folderName);
+  }
+
+  async download(path: string, res: Response): Promise<StreamableFile> {
+    const baseName = this.fileSystemHelpersService.getBaseName(path);
+    const file = createReadStream(
+      this.fileSystemHelpersService.getFullPath(path),
+    );
+    res.set({
+      'Content-Type': 'application/json',
+      'Content-Disposition': `attachment; filename="${baseName}"`,
+    });
+    return new StreamableFile(file);
   }
 }

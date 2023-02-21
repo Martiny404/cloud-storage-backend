@@ -97,4 +97,12 @@ export class FileController {
     res.write(buffer);
     return res.end();
   }
+
+  @Patch('/rename/:id')
+  async rename(
+    @Param('id', new ParseIntPipe()) id: number,
+    @Body('newName') newName: string,
+  ) {
+    return this.fileService.rename(id, newName);
+  }
 }

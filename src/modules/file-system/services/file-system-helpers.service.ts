@@ -1,31 +1,35 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { mkdir, readdir, readFile, stat, writeFile } from 'fs/promises';
+import { mkdir, readdir, readFile, stat, writeFile, rename } from 'fs/promises';
 import { existsSync } from 'fs';
-import { basename, join } from 'path';
+import { basename, join, parse } from 'path';
 import { FileSystemResponse } from '../classes/file-response.class';
 import { MFile } from '../classes/mfile.class';
 import { FILE_NOT_FOUND } from 'src/common/constants/errors/file-system.errors';
 import * as sharp from 'sharp';
 import { File } from 'src/modules/file/entities/file.entity';
+import { Folder } from 'src/modules/folder/entities/folder.entity';
 
 @Injectable()
 export class FileSystemHelpersService {
   async saveFiles(files: MFile[], uploadPath: string, path: string) {
-    if (existsSync(uploadPath)) {
+    if (!existsSync(uploadPath)) {
       await mkdir(uploadPath, { recursive: true });
     }
-
     const res: FileSystemResponse[] = [];
 
     await Promise.allSettled(
       files.map(async (file) => {
-        await writeFile(join(uploadPath, file.originalname), file.buffer);
-        res.push(
-          new FileSystemResponse(
-            join(path, file.originalname),
-            file.originalname,
-          ),
-        );
+        try {
+          await writeFile(join(uploadPath, file.originalname), file.buffer);
+          res.push(
+            new FileSystemResponse(
+              join(path, file.originalname),
+              file.originalname,
+            ),
+          );
+        } catch (e) {
+          console.log(e);
+        }
       }),
     );
     return res;
@@ -112,5 +116,23 @@ export class FileSystemHelpersService {
     const filePath = this.getFullPath(file.path);
     const response = await readFile(filePath);
     return response;
+  }
+
+  async serveFolder(folder: Folder) {
+    const folderPath = this.getFullPath(folder.path);
+    const response = await readdir(folderPath, { withFileTypes: true });
+    return response;
+  }
+
+  async rename(filePath: string, newName: string) {
+    const dir = parse(filePath).dir;
+    const ext = parse(filePath).ext;
+    const oldFullPath = this.getFullPath(filePath);
+    const newFullPath = this.getFullPath(dir, `${newName}${ext}`);
+    await rename(oldFullPath, newFullPath);
+    return {
+      path: join(dir, `${newName}${ext}`),
+      name: `${newName}${ext}`,
+    };
   }
 }
