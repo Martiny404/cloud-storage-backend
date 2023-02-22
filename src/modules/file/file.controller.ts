@@ -19,6 +19,7 @@ import { Response } from 'express';
 import { AppClientRequest } from 'src/common/types/client-request.interface';
 import { Roles } from 'src/decorators/roles.decorator';
 import { FileSystemHelpersService } from '../file-system/services/file-system-helpers.service';
+import { FileSystemService } from '../file-system/services/file-system.service';
 import { AuthorizationGuard } from '../token/guards/authorization.guard';
 import { RoleGuard } from '../token/guards/role.guard';
 import { FileService } from './file.service';
@@ -28,6 +29,7 @@ export class FileController {
   constructor(
     private readonly fileService: FileService,
     private readonly fileSystemHelpersService: FileSystemHelpersService,
+    private readonly fileSystemService: FileSystemService,
   ) {}
 
   @UseGuards(AuthorizationGuard, RoleGuard)
@@ -104,5 +106,20 @@ export class FileController {
     @Body('newName') newName: string,
   ) {
     return this.fileService.rename(id, newName);
+  }
+
+  @UseGuards(AuthorizationGuard, RoleGuard)
+  @Roles('USER')
+  @Get('/download/:id')
+  async download(
+    @Param('id', new ParseIntPipe()) id: number,
+    @Res({ passthrough: true }) res: Response,
+    @Req() req: AppClientRequest,
+  ) {
+    const userId = req?.user?.id;
+
+    const file = await this.fileService.findFileByUser(id, userId);
+
+    return this.fileSystemService.download(file.path, res);
   }
 }

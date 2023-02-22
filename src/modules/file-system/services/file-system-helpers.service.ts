@@ -1,13 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { mkdir, readdir, readFile, stat, writeFile, rename } from 'fs/promises';
 import { existsSync } from 'fs';
-import { basename, join, parse } from 'path';
+import { join, parse } from 'path';
 import { FileSystemResponse } from '../classes/file-response.class';
 import { MFile } from '../classes/mfile.class';
-import { FILE_NOT_FOUND } from 'src/common/constants/errors/file-system.errors';
 import * as sharp from 'sharp';
 import { File } from 'src/modules/file/entities/file.entity';
-import { Folder } from 'src/modules/folder/entities/folder.entity';
+import { Duplex } from 'stream';
 
 @Injectable()
 export class FileSystemHelpersService {
@@ -35,18 +34,8 @@ export class FileSystemHelpersService {
     return res;
   }
 
-  getBaseName(path: string): string {
-    if (!existsSync(path)) {
-      throw new NotFoundException(FILE_NOT_FOUND);
-    }
-    const baseName = basename(path);
-
-    return baseName;
-  }
-
   async getFileSize(path: string) {
     const { size } = await stat(path);
-
     return size / 1_000_000;
   }
 
@@ -118,12 +107,6 @@ export class FileSystemHelpersService {
     return response;
   }
 
-  async serveFolder(folder: Folder) {
-    const folderPath = this.getFullPath(folder.path);
-    const response = await readdir(folderPath, { withFileTypes: true });
-    return response;
-  }
-
   async rename(filePath: string, newName: string) {
     const dir = parse(filePath).dir;
     const ext = parse(filePath).ext;
@@ -134,5 +117,12 @@ export class FileSystemHelpersService {
       path: join(dir, `${newName}${ext}`),
       name: `${newName}${ext}`,
     };
+  }
+
+  bufferToStream(buffer: Buffer) {
+    const tmp = new Duplex();
+    tmp.push(buffer);
+    tmp.push(null);
+    return tmp;
   }
 }

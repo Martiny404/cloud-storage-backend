@@ -2,17 +2,14 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
   HttpCode,
   Post,
   Query,
-  Res,
   UploadedFiles,
   UseFilters,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { Response } from 'express';
 import { HttpExceptionFilter } from 'src/exception-filters/http-exception.filter';
 import { RemoveFilesDto } from './dto/remove-files.dto';
 import { FileSystemHelpersService } from './services/file-system-helpers.service';
@@ -40,13 +37,5 @@ export class FileSystemController {
   @Delete('/')
   async removeFiles(@Body() dto: RemoveFilesDto) {
     return this.fileSystemService.removeFiles(dto.paths);
-  }
-
-  @Get('/download')
-  download(
-    @Query('path') path: string,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    return this.fileSystemService.download(path, res);
   }
 }

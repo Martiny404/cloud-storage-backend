@@ -1,17 +1,22 @@
 import {
   BadRequestException,
   Injectable,
+  NotFoundException,
   StreamableFile,
 } from '@nestjs/common';
-import { mkdir, rm, rmdir } from 'fs/promises';
-import { join } from 'path';
+import { mkdir, rm, rmdir, lstat } from 'fs/promises';
+import { join, parse } from 'path';
 import { MFile } from '../classes/mfile.class';
 import { BadTry } from '../classes/bad-try.class';
 import { createReadStream, existsSync } from 'fs';
-import { DUPLICATE_FOLDER_NAME } from 'src/common/constants/errors/file-system.errors';
+import {
+  DUPLICATE_FOLDER_NAME,
+  FILE_NOT_FOUND,
+} from 'src/common/constants/errors/file-system.errors';
 import { FileSystemHelpersService } from './file-system-helpers.service';
 import { SaveFileResponse } from '../classes/save-file-response.class';
 import { Response } from 'express';
+import * as AdmZip from 'adm-zip';
 
 @Injectable()
 export class FileSystemService {
@@ -103,14 +108,32 @@ export class FileSystemService {
   }
 
   async download(path: string, res: Response): Promise<StreamableFile> {
-    const baseName = this.fileSystemHelpersService.getBaseName(path);
-    const file = createReadStream(
-      this.fileSystemHelpersService.getFullPath(path),
-    );
-    res.set({
-      'Content-Type': 'application/json',
-      'Content-Disposition': `attachment; filename="${baseName}"`,
-    });
-    return new StreamableFile(file);
+    if (!existsSync(path)) {
+      throw new NotFoundException(FILE_NOT_FOUND);
+    }
+    const fullpath = this.fileSystemHelpersService.getFullPath(path);
+    const baseName = parse(fullpath).base;
+    const name = parse(fullpath).name;
+
+    const fileInfo = await lstat(fullpath);
+
+    if (fileInfo.isDirectory()) {
+      const zip = new AdmZip();
+      zip.addLocalFolder(fullpath);
+      const buffer = zip.toBuffer();
+      res.set({
+        'Content-Disposition': `attachment; filename="${name}.zip"`,
+        'Content-Type': 'application/zip',
+      });
+      const stream = this.fileSystemHelpersService.bufferToStream(buffer);
+      return new StreamableFile(stream);
+    } else {
+      const file = createReadStream(fullpath);
+      res.set({
+        'Content-Type': 'application/json',
+        'Content-Disposition': `attachment; filename="${baseName}"`,
+      });
+      return new StreamableFile(file);
+    }
   }
 }

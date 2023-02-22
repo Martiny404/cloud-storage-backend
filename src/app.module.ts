@@ -11,6 +11,7 @@ import { RoleModule } from './modules/role/role.module';
 import { FolderModule } from './modules/folder/folder.module';
 import { FileModule } from './modules/file/file.module';
 import { TarifModule } from './modules/tarif/tarif.module';
+import { DownloadServeModule } from './modules/download-serve/download-serve.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { TarifModule } from './modules/tarif/tarif.module';
     FolderModule,
     FileModule,
     TarifModule,
+    DownloadServeModule,
   ],
 })
 export class AppModule {}
