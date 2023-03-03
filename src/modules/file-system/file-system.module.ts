@@ -10,7 +10,7 @@ import { FileSystemService } from './services/file-system.service';
   providers: [FileSystemService, FileSystemHelpersService],
   imports: [
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', '..', '..', '/static'),
+      rootPath: join(process.cwd(), 'static'),
       serveRoot: '/static',
     }),
   ],

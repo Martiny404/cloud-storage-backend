@@ -13,7 +13,7 @@ import {
   NICK_IS_EXIST,
   USER_NOT_FOUND,
 } from 'src/common/constants/errors/user.errors';
-import { FolderService } from '../folder/folder.service';
+import { FsObjectService } from '../fs-object/services/fs-object.service';
 import { MailService } from '../mail/mail.service';
 import { TokenService } from '../token/token.service';
 import { UserService } from '../user/services/user.service';
@@ -27,7 +27,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly mailService: MailService,
     private readonly tokenService: TokenService,
-    private readonly folderService: FolderService,
+    private readonly fsObjectService: FsObjectService,
   ) {}
 
   async registration(dto: RegisterDto): Promise<number> {
@@ -54,7 +54,7 @@ export class AuthService {
 
     const link = await this.userService.addLink(user.id);
 
-    this.folderService.createFolder({ name: '' }, user.id);
+    this.fsObjectService.createFolder('', user.id);
 
     this.mailService.sendActivationMail(user.email, link.link);
 

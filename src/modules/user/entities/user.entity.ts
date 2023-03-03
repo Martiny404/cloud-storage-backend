@@ -1,7 +1,9 @@
 import { Base } from 'src/common/classes/base-entity';
-import { Folder } from 'src/modules/folder/entities/folder.entity';
+import { FsObject } from 'src/modules/fs-object/entities/fs-object.entity';
 import { Role } from 'src/modules/role/entities/role.entity';
-import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
+import { Tarif } from 'src/modules/tarif/entities/tarif.entity';
+import { UserTarifs } from 'src/modules/tarif/entities/user-tarifs.entity';
+import { Column, Entity, JoinColumn, ManyToMany, OneToMany } from 'typeorm';
 import { ActivationLink } from './activation-links.entity';
 
 @Entity({ name: 'user_main' })
@@ -30,6 +32,10 @@ export class User extends Base {
   @OneToMany(() => ActivationLink, (links) => links.user)
   links: ActivationLink[];
 
-  @OneToMany(() => Folder, (folder) => folder.user)
-  folders: Folder[];
+  @OneToMany(() => FsObject, (fsObject) => fsObject.user)
+  @JoinColumn({ name: 'js_objects' })
+  fsObjects: FsObject[];
+
+  @OneToMany(() => UserTarifs, (ut) => ut.tarif)
+  usersTarifs: UserTarifs[];
 }

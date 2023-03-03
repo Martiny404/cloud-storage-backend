@@ -2,15 +2,18 @@ import {
   Body,
   Controller,
   Delete,
-  HttpCode,
   Post,
   Query,
-  UploadedFiles,
+  UploadedFile,
   UseFilters,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Roles } from 'src/decorators/roles.decorator';
 import { HttpExceptionFilter } from 'src/exception-filters/http-exception.filter';
+import { AuthorizationGuard } from '../token/guards/authorization.guard';
+import { RoleGuard } from '../token/guards/role.guard';
 import { RemoveFilesDto } from './dto/remove-files.dto';
 import { FileSystemHelpersService } from './services/file-system-helpers.service';
 import { FileSystemService } from './services/file-system.service';
@@ -23,15 +26,16 @@ export class FileSystemController {
     private readonly fileSystemHelpersService: FileSystemHelpersService,
   ) {}
 
+  @UseGuards(AuthorizationGuard, RoleGuard)
+  @Roles('ADMIN')
   @Post()
-  @HttpCode(200)
-  @UseInterceptors(FilesInterceptor('file'))
+  @UseInterceptors(FileInterceptor('file'))
   async uploadStaticFiles(
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFile() file: Express.Multer.File,
     @Query('folder') folder?: string,
   ) {
-    const newFiles = await this.fileSystemHelpersService.filterFiles(files);
-    return this.fileSystemService.saveStaticFiles(newFiles, folder);
+    const newFile = await this.fileSystemHelpersService.filterFile(file);
+    return this.fileSystemService.saveStaticFiles(newFile, folder);
   }
 
   @Delete('/')

@@ -8,10 +8,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getTypeormConfig } from './configs/typeorm.config';
 import { MailModule } from './modules/mail/mail.module';
 import { RoleModule } from './modules/role/role.module';
-import { FolderModule } from './modules/folder/folder.module';
-import { FileModule } from './modules/file/file.module';
+import { FsObjectModule } from './modules/fs-object/fs-object.module';
 import { TarifModule } from './modules/tarif/tarif.module';
-import { DownloadServeModule } from './modules/download-serve/download-serve.module';
 
 @Module({
   imports: [
@@ -30,10 +28,8 @@ import { DownloadServeModule } from './modules/download-serve/download-serve.mod
     UserModule,
     MailModule,
     RoleModule,
-    FolderModule,
-    FileModule,
+    FsObjectModule,
     TarifModule,
-    DownloadServeModule,
   ],
 })
 export class AppModule {}
