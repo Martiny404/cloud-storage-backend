@@ -28,6 +28,7 @@ export class FileSystemHelpersService {
     }
     const fullname = Buffer.from(file.originalname, 'latin1').toString('utf-8');
     const ext = parse(fullname).ext;
+    const mimetype = file.mimetype;
     const name = parse(fullname).name;
     const newName = `${name}-${v4()}${ext}`;
     const newFilePath = join(uploadPath, newName);
@@ -39,7 +40,7 @@ export class FileSystemHelpersService {
     const rs = new BufferStream(file.buffer);
     const ws = createWriteStream(newFilePath);
     await pipeline(rs, ws);
-    return new FileSystemResponse(join(path, newName), newName);
+    return new FileSystemResponse(join(path, newName), newName, mimetype);
   }
 
   async getFileSize(path: string) {

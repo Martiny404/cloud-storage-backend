@@ -14,6 +14,7 @@ import { RoleService } from 'src/modules/role/role.service';
 import { DeepPartial, FindOneOptions, Repository, SaveOptions } from 'typeorm';
 import { ActivationLink } from '../entities/activation-links.entity';
 import { User } from '../entities/user.entity';
+import { TarifService } from 'src/modules/tarif/tarif.service';
 
 @Injectable()
 export class UserService {
@@ -21,7 +22,6 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     @InjectRepository(ActivationLink)
     private readonly linkRepository: Repository<ActivationLink>,
-
     private readonly roleService: RoleService,
   ) {}
 

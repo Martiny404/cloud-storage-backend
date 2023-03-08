@@ -5,6 +5,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   Tree,
   TreeChildren,
   TreeParent,
@@ -43,8 +44,11 @@ export class FsObject extends Base {
   @TreeChildren()
   children: FsObject[];
 
-  @Column({ type: 'boolean', name: 'is_root', default: false })
-  isRoot: boolean;
+  @OneToOne(() => User, (user) => user.rootFolder)
+  rootUser: User;
+
+  @Column({ type: 'varchar', nullable: true })
+  mimetype: string;
 
   @ManyToOne(() => User, (user) => user.fsObjects, {
     onDelete: 'CASCADE',

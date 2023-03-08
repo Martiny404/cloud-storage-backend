@@ -98,7 +98,6 @@ export class FsObjectService {
   async createFolder(name: string, userId: number, parentId?: number) {
     let parentPath = '';
 
-    let isRoot = true;
     if (parentId) {
       const parent = await this.getFile({
         where: { id: parentId },
@@ -112,7 +111,6 @@ export class FsObjectService {
         throw new BadRequestException(DUPLICATE_FOLDER_NAME);
       }
       parentPath = parent.path;
-      isRoot = false;
     }
 
     const { path, folderName } = await this.fileSystemService.createFolder(
@@ -132,11 +130,11 @@ export class FsObjectService {
       user: {
         id: userId,
       },
-      isRoot: isRoot,
       fileType: FileTypeEnum.FOLDER,
     });
-    return this.fsObjectsRepository.save(folder);
+    return await this.fsObjectsRepository.save(folder);
   }
+
   async createFile(file: MFile, folderId: number, userId: number) {
     const parent = await this.getFile({
       where: {
@@ -159,6 +157,7 @@ export class FsObjectService {
       name: savedFile.name,
       path: savedFile.url,
       size: savedFile.size,
+      mimetype: savedFile.mimetype,
       fileType: FileTypeEnum.FILE,
       user: { id: userId },
     });
@@ -183,7 +182,9 @@ export class FsObjectService {
       if (file.fileType == FileTypeEnum.FILE) {
         filesPaths.push(file.path);
       } else {
-        foldersPaths.push(file.path);
+        if (!file.rootUser) {
+          foldersPaths.push(file.path);
+        }
       }
     });
 

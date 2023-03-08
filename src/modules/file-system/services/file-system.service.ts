@@ -1,14 +1,9 @@
-import {
-  BadRequestException,
-  Injectable,
-  StreamableFile,
-} from '@nestjs/common';
+import { Injectable, StreamableFile } from '@nestjs/common';
 import { mkdir, rm } from 'fs/promises';
 import { join, parse } from 'path';
 import { MFile } from '../classes/mfile.class';
 import { BadTry } from '../classes/bad-try.class';
 import { existsSync, lstatSync } from 'fs';
-import { DUPLICATE_FOLDER_NAME } from 'src/common/constants/errors/file-system.errors';
 import { SaveFileResponse } from '../classes/save-file-response.class';
 import { Response } from 'express';
 import * as AdmZip from 'adm-zip';
@@ -52,7 +47,7 @@ export class FileSystemService {
 
     const filePath = this.fileSystemHelpersService.getFullPath(saved.url);
     const size = await this.fileSystemHelpersService.getFileSize(filePath);
-    return new SaveFileResponse(saved.url, saved.name, size);
+    return new SaveFileResponse(saved.url, saved.name, saved.mimetype, size);
   }
 
   removeFolders(paths: string[]) {

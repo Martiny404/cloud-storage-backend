@@ -1,9 +1,15 @@
 import { Base } from 'src/common/classes/base-entity';
 import { FsObject } from 'src/modules/fs-object/entities/fs-object.entity';
 import { Role } from 'src/modules/role/entities/role.entity';
-import { Tarif } from 'src/modules/tarif/entities/tarif.entity';
-import { UserTarifs } from 'src/modules/tarif/entities/user-tarifs.entity';
-import { Column, Entity, JoinColumn, ManyToMany, OneToMany } from 'typeorm';
+import { Subscription } from 'src/modules/tarif/entities/subscription.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToMany,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { ActivationLink } from './activation-links.entity';
 
 @Entity({ name: 'user_main' })
@@ -23,6 +29,13 @@ export class User extends Base {
   @Column({ type: 'boolean', name: 'is_activated', default: false })
   isActivated: boolean;
 
+  @Column({ type: 'int', name: 'default_storage', default: 2 })
+  defaultStorage: number;
+
+  @OneToOne(() => FsObject, (fsObj) => fsObj.rootUser)
+  @JoinColumn({ name: 'root_folder' })
+  rootFolder: FsObject;
+
   @ManyToMany(() => Role, (role) => role.users, {
     eager: true,
     onDelete: 'CASCADE',
@@ -33,9 +46,8 @@ export class User extends Base {
   links: ActivationLink[];
 
   @OneToMany(() => FsObject, (fsObject) => fsObject.user)
-  @JoinColumn({ name: 'js_objects' })
   fsObjects: FsObject[];
 
-  @OneToMany(() => UserTarifs, (ut) => ut.tarif)
-  usersTarifs: UserTarifs[];
+  @OneToMany(() => Subscription, (sub) => sub.user, { eager: true })
+  subscriptions: Subscription[];
 }

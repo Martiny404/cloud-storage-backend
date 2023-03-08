@@ -54,7 +54,11 @@ export class AuthService {
 
     const link = await this.userService.addLink(user.id);
 
-    this.fsObjectService.createFolder('', user.id);
+    const rootFolder = await this.fsObjectService.createFolder('', user.id);
+
+    user.rootFolder = rootFolder;
+
+    await this.userService.saveUser(user);
 
     this.mailService.sendActivationMail(user.email, link.link);
 

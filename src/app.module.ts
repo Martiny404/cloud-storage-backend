@@ -10,6 +10,7 @@ import { MailModule } from './modules/mail/mail.module';
 import { RoleModule } from './modules/role/role.module';
 import { FsObjectModule } from './modules/fs-object/fs-object.module';
 import { TarifModule } from './modules/tarif/tarif.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -17,11 +18,10 @@ import { TarifModule } from './modules/tarif/tarif.module';
       envFilePath: `.env`,
     }),
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
+      imports: [ConfigModule, ScheduleModule.forRoot()],
       inject: [ConfigService],
       useFactory: getTypeormConfig,
     }),
-
     AuthModule,
     TokenModule,
     FileSystemModule,
