@@ -182,9 +182,7 @@ export class FsObjectService {
       if (file.fileType == FileTypeEnum.FILE) {
         filesPaths.push(file.path);
       } else {
-        if (!file.rootUser) {
-          foldersPaths.push(file.path);
-        }
+        foldersPaths.push(file.path);
       }
     });
 

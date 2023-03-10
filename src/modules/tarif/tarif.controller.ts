@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AppClientRequest } from 'src/common/types/client-request.interface';
 import { AuthorizationGuard } from '../token/guards/authorization.guard';
 import { CreateTarifDto } from './dto/create-tarif.dto';
@@ -22,5 +22,11 @@ export class TarifController {
   ) {
     const userId = req.user.id;
     return this.tarifService.subscription(dto, userId);
+  }
+
+  @UseGuards(AuthorizationGuard)
+  @Get('/test')
+  async t(@Req() req: AppClientRequest) {
+    return this.tarifService.checkUserSubscriptionExpires(req.user.id);
   }
 }

@@ -83,7 +83,7 @@ export class TarifService {
     return this.subscriptionRepository.save(s);
   }
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  //@Cron(CronExpression.EVERY_30_SECONDS)
   async checkUsersSubscriptions() {
     await this.subscriptionRepository.update(
       {
@@ -98,11 +98,14 @@ export class TarifService {
 
   async checkUserSubscriptionExpires(userId: number) {
     const sub = await this.subscriptionRepository.findOne({
-      where: { user: { id: userId }, isActive: true },
+      where: {
+        user: { id: userId },
+        isActive: true,
+      },
     });
 
     if (!sub) {
-      return true;
+      return false;
     }
 
     if (new Date() >= sub.endDate) {

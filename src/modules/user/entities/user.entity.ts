@@ -32,7 +32,7 @@ export class User extends Base {
   @Column({ type: 'int', name: 'default_storage', default: 2 })
   defaultStorage: number;
 
-  @OneToOne(() => FsObject, (fsObj) => fsObj.rootUser)
+  @OneToOne(() => FsObject, (fsObj) => fsObj.rootUser, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'root_folder' })
   rootFolder: FsObject;
 
