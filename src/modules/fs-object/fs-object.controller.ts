@@ -10,7 +10,6 @@ import {
   Query,
   Req,
   Res,
-  StreamableFile,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -18,6 +17,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 import { createReadStream } from 'fs';
+import { stat } from 'fs/promises';
 import { AppClientRequest } from 'src/common/types/client-request.interface';
 import { Roles } from 'src/decorators/roles.decorator';
 import { FileSystemHelpersService } from '../file-system/services/file-system-helpers.service';
@@ -81,27 +81,52 @@ export class FsObjectController {
     const userId = req?.user?.id;
     const file = await this.fsObjectService.findFileByUser(id, userId);
     const path = this.fileSystemHelpersService.getFullPath(file.path);
-    const stream = createReadStream(path);
-    res.set({
-      'Content-Type': 'application/json',
-      'Content-Disposition': `attachment; filename="${file.name}"`,
-    });
-    return new StreamableFile(stream);
+    const { size } = await stat(path);
+    const range = req.headers.range || '0';
+    const chunkSize = 1 * 1e6;
+    const start = Number(range.replace(/\D/g, ''));
+    const end = Math.min(start + chunkSize, size - 1);
+    const stream = createReadStream(path, { start, end });
+
+    const contentLength = end - start + 1;
+
+    const headers = {
+      'Content-Type': `${file.mimetype}`,
+      'Content-Range': `bytes ${start}-${end}/${size}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': contentLength,
+      'Content-Disposition': `inline; filename="${file.name}"`,
+    };
+    res.writeHead(206, headers);
+    stream.pipe(res);
   }
 
   @Get('/serve-file-by-link/:link')
   async serveFileByLink(
     @Param('link') link: string,
-    @Res({ passthrough: true }) res: Response,
+    @Res() res: Response,
+    @Req() req: AppClientRequest,
   ) {
     const file = await this.fsObjectService.getFileByLink(link);
     const path = this.fileSystemHelpersService.getFullPath(file.path);
-    const stream = createReadStream(path);
-    res.set({
-      'Content-Type': 'application/json',
-      'Content-Disposition': `attachment; filename="${file.name}"`,
-    });
-    return new StreamableFile(stream);
+    const { size } = await stat(path);
+    const range = req.headers.range || '0';
+    const chunkSize = 1 * 1e6;
+    const start = Number(range.replace(/\D/g, ''));
+    const end = Math.min(start + chunkSize, size - 1);
+    const stream = createReadStream(path, { start, end });
+
+    const contentLength = end - start + 1;
+
+    const headers = {
+      'Content-Type': `${file.mimetype}`,
+      'Content-Range': `bytes ${start}-${end}/${size}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': contentLength,
+      'Content-Disposition': `inline; filename="${file.name}"`,
+    };
+    res.writeHead(206, headers);
+    stream.pipe(res);
   }
   @UseGuards(AuthorizationGuard, RoleGuard)
   @Roles('USER')

@@ -54,7 +54,10 @@ export class AuthService {
 
     const link = await this.userService.addLink(user.id);
 
-    const rootFolder = await this.fsObjectService.createFolder('', user.id);
+    const rootFolder = await this.fsObjectService.createFolder(
+      user.id.toString(),
+      user.id,
+    );
 
     user.rootFolder = rootFolder;
 

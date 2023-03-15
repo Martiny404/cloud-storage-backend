@@ -13,7 +13,7 @@ import { BadTry } from 'src/modules/file-system/classes/bad-try.class';
 import { MFile } from 'src/modules/file-system/classes/mfile.class';
 import { FileSystemHelpersService } from 'src/modules/file-system/services/file-system-helpers.service';
 import { FileSystemService } from 'src/modules/file-system/services/file-system.service';
-import { Repository, FindOneOptions, In } from 'typeorm';
+import { Repository, FindOneOptions, In, Like, ILike, Not } from 'typeorm';
 import { v4 } from 'uuid';
 import { FileTypeEnum, FsObject } from '../entities/fs-object.entity';
 
@@ -85,14 +85,32 @@ export class FsObjectService {
     const file = await this.getFile({
       where: { id },
     });
+
+    const oldPath = file.path;
+
     const newData = await this.fileSystemHelpersService.rename(
       file.path,
       newName,
     );
-
     file.name = newData.name;
     file.path = newData.path;
-    return this.fsObjectsRepository.save(file);
+    await this.fsObjectsRepository.save(file);
+    const childFiles = await this.fsObjectsRepository.find({
+      where: {
+        path: Like(`${oldPath}%`),
+        id: Not(file.id),
+      },
+    });
+    if (childFiles.length > 0) {
+      await Promise.all(
+        childFiles.map(async (fl) => {
+          const newPath = fl.path.replace(oldPath, file.path);
+          fl.path = newPath;
+          await this.fsObjectsRepository.save(fl);
+        }),
+      );
+    }
+    return file;
   }
 
   async createFolder(name: string, userId: number, parentId?: number) {
@@ -119,10 +137,8 @@ export class FsObjectService {
       parentPath,
     );
 
-    const newName = folderName == '' ? path : folderName;
-
     const folder = this.fsObjectsRepository.create({
-      name: newName,
+      name: folderName,
       path,
       parent: {
         id: parentId ?? null,
